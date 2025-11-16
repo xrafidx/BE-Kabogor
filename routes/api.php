@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\CheckIsAdmin;
 
 // Buat Dapetin Semua Data User
@@ -38,4 +39,16 @@ Route::put('/products/{id}',[ProductController::class, 'editSpecific'])-> middle
 
 //Delete Specific Produk
 Route::delete('/products/{id}',[ProductController::class, 'deleteSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
+
+
+// CRUD Data Sendiri (Profil)
+
+// dapetin data profile diri sendiri
+Route::get('/profile',[ProfileController::class, 'getMyData'])-> middleware('auth:sanctum');
+
+//edit data profile diri sendiri
+Route::put('/profile',[ProfileController::class, 'editMyData'])-> middleware('auth:sanctum');
+
+
+
 
