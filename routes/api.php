@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -49,6 +50,18 @@ Route::get('/profile',[ProfileController::class, 'getMyData'])-> middleware('aut
 //edit data profile diri sendiri
 Route::put('/profile',[ProfileController::class, 'editMyData'])-> middleware('auth:sanctum');
 
+
+
+// CRUD Akun User (KHUSUS ADMIN)
+
+// Dapetin Semua Data Users
+Route::get('/users',[AccountController::class, 'getAllUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Dapetin Data Users Tertentu
+Route::get('/user/{id}',[AccountController::class, 'getSpecificUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Edit Data Users Tertentu
+Route::put('/user/{id}',[AccountController::class, 'editSpecificUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Hapus Data Users Tertentu
+Route::delete('/users/{id}',[AccountController::class, 'deleteSpecificUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 
 
