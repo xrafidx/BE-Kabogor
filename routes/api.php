@@ -62,6 +62,8 @@ Route::get('/user/{id}',[AccountController::class, 'getSpecificUser'])->middlewa
 Route::put('/user/{id}',[AccountController::class, 'editSpecificUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 // Hapus Data Users Tertentu
 Route::delete('/users/{id}',[AccountController::class, 'deleteSpecificUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Bikin Data User Baru
+Route::post('/user',[AccountController::class, 'createUser'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 
 

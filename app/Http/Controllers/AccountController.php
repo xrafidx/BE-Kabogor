@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AccountRequest;
+use App\Http\Requests\RegisterRequest;
 use Illuminate\Contracts\Support\ValidatedData;
 
 class AccountController extends Controller
@@ -61,7 +62,7 @@ class AccountController extends Controller
                 'message' => 'Admin tidak dapat menghapus akunnya sendiri.'
             ], 403); // 403 Forbidden
         }
-        
+
         $user = User::findOrFail($id);
         $user->delete();
         return response()->json([
@@ -69,5 +70,18 @@ class AccountController extends Controller
             "product" => $user
         ],200);
 
+    }
+    public function createUser(RegisterRequest $request){
+        $validatedData = $request -> validated();
+        // hashing password
+        $validatedData['password'] = Hash::make($validatedData['password']);
+                
+        // create
+        $newUser = User::create($validatedData);
+
+        return response()->json([
+            "message" => "User dibuat",
+            "product" => $newUser
+        ],200);
     }
 }
