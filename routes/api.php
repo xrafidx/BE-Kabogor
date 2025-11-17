@@ -1,12 +1,13 @@
 <?php
 
-use App\Http\Controllers\AccountController;
 use Illuminate\Http\Request;
+use App\Http\Middleware\CheckIsAdmin;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Middleware\CheckIsAdmin;
 
 // Buat Dapetin Semua Data User
 Route::get('/user', function (Request $request) {
@@ -67,3 +68,14 @@ Route::post('/user',[AccountController::class, 'createUser'])->middleware(['auth
 
 
 
+// ORDER CRUD
+// Get Order untuk user dan admin
+Route::get('/orders',[OrderController::class, 'showAllOrder'])->middleware(['auth:sanctum']);
+// Get Specific Order
+Route::get('/order/{id}',[OrderController::class, 'showSpecificOrder'])->middleware(['auth:sanctum']);
+// Create Order
+Route::post('/order',[OrderController::class, 'createOrder'])->middleware(['auth:sanctum']);
+// Delete Order
+Route::delete('/order/{id}',[OrderController::class, 'deleteOrder'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Change State Order
+Route::patch('/order/{id}',[OrderController::class, 'editState'])->middleware(['auth:sanctum']);
