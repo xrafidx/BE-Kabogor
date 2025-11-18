@@ -7,8 +7,10 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Enums\OrderStatus;
 use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderStatusRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpParser\Node\Stmt\TryCatch;
 
 class OrderController extends Controller
 {
@@ -28,7 +30,7 @@ class OrderController extends Controller
          // Kalo Bukan admin (User) show semua order yang dimiliki oleh user tersebut.
          else{
             $user = $request->user();
-            $user->load('order.products');
+            $user->load('orders.products');
             return response()->json([
                 "message" => "Order Ditemukan",
                 "Orders" => $user->orders
@@ -137,7 +139,7 @@ class OrderController extends Controller
 
 
     }
-    public function editState(Request $request, string $id){
+    public function editState(UpdateOrderStatusRequest $request, string $id){
         // 1. Validasi otomatis (cek 'status' ada & valid)
         $validated = $request->validated();
         $newStatus = OrderStatus::from($validated['status']); // Konversi string ke Objek Enum
@@ -190,4 +192,70 @@ class OrderController extends Controller
             "order" => $order->fresh()
         ], 200);
     }
+
+    public function editOrder(StoreOrderRequest $request, string $id){
+       // 1. Validasi otomatis (sama seperti createOrder)
+        $validatedData = $request->validated();
+        $productItems = $validatedData['products']; // Keranjang baru
+
+        // 2. Cari order yang mau di-edit
+        $order = Order::findOrFail($id);
+
+        // Mulai Transaction (karena kita menyentuh 2 tabel)
+        try {
+            $order = DB::transaction(function () use ($order, $productItems) {
+                
+                // 3. LOGIC LANGKAH 3-5 ANDA (Sama persis dgn createOrder)
+                // Kita hitung ulang total harga berdasarkan keranjang baru
+                $productIds = collect($productItems)->pluck('product_id');
+                $productsFromDB = Product::findMany($productIds)->keyBy('id');
+
+                $totalPrice = 0;
+                $pivotData = []; // Data pivot baru
+
+                foreach ($productItems as $item) {
+                    $product = $productsFromDB->get($item['product_id']);
+                    $quantity = $item['quantity'];
+                    $priceAtTime = $product->product_price; // Ambil harga asli
+
+                    $totalPrice += $priceAtTime * $quantity;
+
+                    // Siapkan data pivot baru
+                    $pivotData[$product->id] = [
+                        'quantity' => $quantity,
+                        'price_at_time' => $priceAtTime
+                    ];
+                }
+
+                // 4. LANGKAH 6 (UPDATE): Perbarui tabel 'orders'
+                // Kita update total_price di order utamanya
+                $order->update([
+                    'total_price' => $totalPrice
+                ]);
+
+                // 5. LANGKAH 6 (SYNC): Perbarui tabel 'order_product'
+                // Ini adalah jawaban pertanyaan Anda.
+                // sync() akan menambah, mengupdate, dan menghapus
+                // data di tabel pivot secara otomatis.
+                $order->products()->sync($pivotData);
+
+                return $order;
+            });
+
+            // Jika transaction sukses
+            $order->load('products', 'user'); // Ambil data relasi terbaru
+
+            return response()->json([
+                "message" => "Order berhasil di-update",
+                "order" => $order
+            ], 200); // 200 OK
+
+        } catch (Throwable $e) {
+            // Jika ada error di dalam transaction
+            return response()->json([
+                "message" => "Update order gagal, silakan coba lagi.",
+                "error" => $e->getMessage() // (Hapus ini di production)
+            ], 500);
+        }
+    }   
 }
