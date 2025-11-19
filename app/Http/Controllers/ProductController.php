@@ -39,18 +39,24 @@ class ProductController extends Controller
 
     }
     public function create(StoreProductRequest $request){
-        // validasi data yang masuk.
-        $validatedData = $request->validated();
-        
+        $data = $request->validated();
+        $imgUrl = null;
 
-        $product = Product::create($validatedData);
-        
+        if ($request->hasFile('product_img')) {
+            $path = $request->file('product_img')->store('products', 'public'); 
+            $imgUrl = $path;
+        }
+        $data['product_url_image'] = $imgUrl;
+
+        $product = Product::create($data);
+
         return response()->json([
-            "message" => "Produk Berhasil Dibuat",
-            "produk" => $product
-        ],201);
-
+            "message" => "Product created successful",
+            "data" => $product,
+        ]);
     }
+
+    // http://localhost:8000/storage/products/gC1XSNg0bVh46oiBZhURoU84T22GovXQo3npTmWa.png
 
     public function editSpecific(StoreProductRequest $request, String $id){
         // validasi data yang masuk.
