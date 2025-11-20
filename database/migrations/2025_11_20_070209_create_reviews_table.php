@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('product_name');
-            $table->text('product_description')->nullable();
-            $table->integer('product_price');
-            $table->text('product_url_image')->nullable();
-
+            $table->text('product');
+            $table->enum('product_rating', ['1', '2', '3', '4', '5']);
+            $table->text('review');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('state', ['show','hide']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('reviews');
     }
 };

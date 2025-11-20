@@ -37,7 +37,7 @@ Route::get('/products/{id}', [ProductController::class, 'getSpecific']);
 Route::post('/products', [ProductController::class, 'create'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 //Update Specific Produk
-Route::put('/products/{id}',[ProductController::class, 'editSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
+Route::post('/products/{id}',[ProductController::class, 'editSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 //Delete Specific Produk
 Route::delete('/products/{id}',[ProductController::class, 'deleteSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
@@ -82,26 +82,10 @@ Route::patch('/order/{id}',[OrderController::class, 'editState'])->middleware(['
 // Edit Order
 
 //EDIT ORDER BUGGY!
-// Route::put('/order/{id}',[OrderController::class, 'editOrder'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+Route::put('/order/{id}',[OrderController::class, 'editOrder'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 
-// HASIL TESTING
-// Admin token:2|pfDZQw7JZImkTZ8DNVKaZL7PnBXAi3Ofr5okuGJ2f7120621
-// User token:3|n9unKHXEnfLmmnSlEobugZPxQm8YYAsdMmqGA4Ue4ccf3729
-// User token:4|4zZFGM5uu4av7hZcHBPv2W4Jlg2WMF5G0ACNIxL43c19983d
 
 
-// Pengamatan gua:
-// Create Order Berhasil buat user biasa.
-// Create Order Berhasil buat admin.
 
-// Get Specific Order bisa buat user biasa
-// Get Specific ORder bisa buat admin
-
-// Get All Orders berhasil buat admin
-// Get All Orders berhasil buat user juga
-
-// Delete Work buat admin aja (intended)
-
-// Update status worked semuanya dan sesuai.
 
