@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 
 // Buat Dapetin Semua Data User
 Route::get('/user', function (Request $request) {
@@ -37,7 +38,7 @@ Route::get('/products/{id}', [ProductController::class, 'getSpecific']);
 Route::post('/products', [ProductController::class, 'create'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 //Update Specific Produk
-Route::post('/products/{id}',[ProductController::class, 'editSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
+Route::patch('/products/{id}',[ProductController::class, 'editSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 //Delete Specific Produk
 Route::delete('/products/{id}',[ProductController::class, 'deleteSpecific'])-> middleware(['auth:sanctum', CheckIsAdmin::class]);
@@ -80,11 +81,22 @@ Route::delete('/order/{id}',[OrderController::class, 'deleteOrder'])->middleware
 // Change State Order
 Route::patch('/order/{id}',[OrderController::class, 'editState'])->middleware(['auth:sanctum']);
 // Edit Order
-
-//EDIT ORDER BUGGY!
 Route::put('/order/{id}',[OrderController::class, 'editOrder'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 
+
+// REVIEWS
+
+// Create Review (User dan Admin)
+Route::post('/reviews/',[ReviewController::class,'createReview'])->middleware(['auth:sanctum']);
+// Delete Review (Admin)
+Route::delete('/reviews/{id}',[ReviewController::class,'deleteReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Get semua review 
+Route::get('/reviews/',[ReviewController::class,''])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Get specific review
+Route::get('/reviews/{id}',[ReviewController::class,''])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+// Change state review (hidden or show) (Admin)
+Route::patch('/reviews/{id}',[ReviewController::class,'changeStateReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 
 

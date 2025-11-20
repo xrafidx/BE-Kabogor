@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('product_rating', ['1', '2', '3', '4', '5']);
             $table->text('review');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('state', ['show','hide']);
+            $table->enum('state', ['show','hide'])->nullable();
         });
     }
 

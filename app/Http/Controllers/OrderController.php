@@ -193,74 +193,69 @@ class OrderController extends Controller
         ], 200);
     }
 
-    public function editOrder(Request $request, string $id){
-       // 1. Validasi otomatis (sama seperti createOrder)
-        $validatedData = $request;
+    public function editOrder(StoreOrderRequest $request, string $id){
+        // 1. Validasi otomatis (sama seperti createOrder)
+        $validatedData = $request->validated();
         $productItems = $validatedData['products']; // Keranjang baru
 
         // 2. Cari order yang mau di-edit
         $order = Order::findOrFail($id);
 
-        return response()->json([
-            "message" => "test",
-            "test" => $productItems
-        ], 200);
-
-        // // Mulai Transaction (karena kita menyentuh 2 tabel)
-        // try {
-        //     $order = DB::transaction(function () use ($order, $productItems) {
+        // Mulai Transaction (karena kita menyentuh 2 tabel)
+        try {
+            $order = DB::transaction(function () use ($order, $productItems) {
                 
-        //         // 3. LOGIC LANGKAH 3-5 ANDA (Sama persis dgn createOrder)
-        //         // Kita hitung ulang total harga berdasarkan keranjang baru
-        //         $productIds = collect($productItems)->pluck('product_id');
-        //         $productsFromDB = Product::findMany($productIds)->keyBy('id');
+                // 3. LOGIC LANGKAH 3-5 ANDA (Sama persis dgn createOrder)
+                // Kita hitung ulang total harga berdasarkan keranjang baru
+                $productIds = collect($productItems)->pluck('product_id');
+                $productsFromDB = Product::findMany($productIds)->keyBy('id');
 
-        //         $totalPrice = 0;
-        //         $pivotData = []; // Data pivot baru
+                $totalPrice = 0;
+                $pivotData = []; // Data pivot baru
 
-        //         foreach ($productItems as $item) {
-        //             $product = $productsFromDB->get($item['product_id']);
-        //             $quantity = $item['quantity'];
-        //             $priceAtTime = $product->product_price; // Ambil harga asli
+                foreach ($productItems as $item) {
+                    $product = $productsFromDB->get($item['product_id']);
+                    $quantity = $item['quantity'];
+                    $priceAtTime = $product->product_price; // Ambil harga asli
 
-        //             $totalPrice += $priceAtTime * $quantity;
+                    $totalPrice += $priceAtTime * $quantity;
 
-        //             // Siapkan data pivot baru
-        //             $pivotData[$product->id] = [
-        //                 'quantity' => $quantity,
-        //                 'price_at_time' => $priceAtTime
-        //             ];
-        //         }
+                    // Siapkan data pivot baru
+                    $pivotData[$product->id] = [
+                        'quantity' => $quantity,
+                        'price_at_time' => $priceAtTime
+                    ];
+                }
 
-        //         // 4. LANGKAH 6 (UPDATE): Perbarui tabel 'orders'
-        //         // Kita update total_price di order utamanya
-        //         $order->update([
-        //             'total_price' => $totalPrice
-        //         ]);
+                // 4. LANGKAH 6 (UPDATE): Perbarui tabel 'orders'
+                // Kita update total_price di order utamanya
+                $order->update([
+                    'total_price' => $totalPrice
+                ]);
 
-        //         // 5. LANGKAH 6 (SYNC): Perbarui tabel 'order_product'
-        //         // Ini adalah jawaban pertanyaan Anda.
-        //         // sync() akan menambah, mengupdate, dan menghapus
-        //         // data di tabel pivot secara otomatis.
-        //         $order->products()->sync($pivotData);
+                // 5. LANGKAH 6 (SYNC): Perbarui tabel 'order_product'
+                // Ini adalah jawaban pertanyaan Anda.
+                // sync() akan menambah, mengupdate, dan menghapus
+                // data di tabel pivot secara otomatis.
+                $order->products()->sync($pivotData);
 
-        //         return $order;
-        //     });
+                return $order;
+            });
 
-        //     // Jika transaction sukses
-        //     $order->load('products', 'user'); // Ambil data relasi terbaru
+            // Jika transaction sukses
+            $order->load('products', 'user'); // Ambil data relasi terbaru
 
-        //     return response()->json([
-        //         "message" => "Order berhasil di-update",
-        //         "order" => $order
-        //     ], 200); // 200 OK
+            return response()->json([
+                "message" => "Order berhasil di-update",
+                "order" => $order
+            ], 200); // 200 OK
 
-        // } catch (Throwable $e) {
-        //     // Jika ada error di dalam transaction
-        //     return response()->json([
-        //         "message" => "Update order gagal, silakan coba lagi.",
-        //         "error" => $e->getMessage() // (Hapus ini di production)
-        //     ], 500);
-        // }
+        } catch (Throwable $e) {
+            // Jika ada error di dalam transaction
+            return response()->json([
+                "message" => "Update order gagal, silakan coba lagi.",
+                "error" => $e->getMessage() // (Hapus ini di production)
+            ], 500);
+        }
     }   
 }

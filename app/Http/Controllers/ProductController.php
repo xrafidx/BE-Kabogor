@@ -66,38 +66,38 @@ class ProductController extends Controller
 
     public function editSpecific(StoreProductRequest $request, string $id){
         // validasi data yang masuk.
-        $validatedData = $request->validateResolved();
-        // // initialize buat path image
-        // $imgUrl = null;
+        $validatedData = $request->validated();
+        // initialize buat path image
+        $imgUrl = null;
 
-        // // cari produk yang mau diedit
-        // $product = Product::findOrFail($id);
+        // cari produk yang mau diedit
+        $product = Product::findOrFail($id);
 
-        // // cek kalo ada image yang dikirim apa engga, kalo ada langsung di store.
-        // if ($request->hasFile('product_img')) {
-        //     $path = $request->file('product_img')->store('products', 'public'); 
-        //     $imgUrl = $path;
-        //     // langsung store url_image baru, kalo seandainya ada image baru.
-        //     $validatedData['product_url_image'] = $imgUrl;
+        // cek kalo ada image yang dikirim apa engga, kalo ada langsung di store.
+        if ($request->hasFile('product_img')) {
+            $path = $request->file('product_img')->store('products', 'public'); 
+            $imgUrl = $path;
+            // langsung store url_image baru, kalo seandainya ada image baru.
+            $validatedData['product_url_image'] = $imgUrl;
 
-        //     // cek kalo product apakah udah punya gambar sebelumnya jika udah hapus gambar lama
-        //     if($product['product_url_image'] != null){
-        //         $oldImageUrl = $product['product_url_image'];
-        //         Storage::disk('public')->delete($oldImageUrl);
-        //     }
+            // cek kalo product apakah udah punya gambar sebelumnya jika udah hapus gambar lama
+            if($product['product_url_image'] != null){
+                $oldImageUrl = $product['product_url_image'];
+                Storage::disk('public')->delete($oldImageUrl);
+            }
 
-        // }
-        // else{
-        //     // karena ga ada image baru, berarti tetep pake url lama dari product yang udah ada.
-        //     $validatedData['product_url_image'] = $product['product_url_image'];
-        // }
+        }
+        else{
+            // karena ga ada image baru, berarti tetep pake url lama dari product yang udah ada.
+            $validatedData['product_url_image'] = $product['product_url_image'];
+        }
 
-        // // Update Produk
-        // $product->update($validatedData);
+        // Update Produk
+        $product->update($validatedData);
         
         return response()->json([
             "message" => "Produk Berhasil Diupdate",
-            "produk" => $validatedData
+            "produk" => $product
         ],201);
 
     }
