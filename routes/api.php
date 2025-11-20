@@ -92,9 +92,9 @@ Route::post('/reviews/',[ReviewController::class,'createReview'])->middleware(['
 // Delete Review (Admin)
 Route::delete('/reviews/{id}',[ReviewController::class,'deleteReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 // Get semua review 
-Route::get('/reviews/',[ReviewController::class,''])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+Route::get('/reviews/',[ReviewController::class,'getAllReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 // Get specific review
-Route::get('/reviews/{id}',[ReviewController::class,''])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+Route::get('/reviews/{id}',[ReviewController::class,'getSpecificReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 // Change state review (hidden or show) (Admin)
 Route::patch('/reviews/{id}',[ReviewController::class,'changeStateReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 

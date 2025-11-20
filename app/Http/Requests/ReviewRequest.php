@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\In;
 
 class ReviewRequest extends FormRequest
 {
@@ -23,6 +25,10 @@ class ReviewRequest extends FormRequest
     {
         return [
             //
+            'product' => 'required|string',
+            'product_rating' =>['required', 'in:1,2,3,4,5'],
+            'review' => 'required|string',
+            'state' => ['nullable', 'in:show,hide'],
         ];
     }
 }
