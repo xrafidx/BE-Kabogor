@@ -5,10 +5,11 @@ use App\Http\Middleware\CheckIsAdmin;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\DashboardController;
 
 // Buat Dapetin Semua Data User
 Route::get('/user', function (Request $request) {
@@ -99,5 +100,7 @@ Route::get('/reviews/{id}',[ReviewController::class,'getSpecificReview'])->middl
 Route::patch('/reviews/{id}',[ReviewController::class,'changeStateReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 
 
-
-
+// Dashboard
+// Get Data Sepanjang Masa
+Route::get('/dashboard/',[DashboardController::class, 'getData'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
+Route::post('/cta',[DashboardController::class, 'incrementCta']);
