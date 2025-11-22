@@ -86,4 +86,11 @@ class ReviewController extends Controller
 
         
     }
+    public function homeReview(){
+            $review = Review::where('state','show')->get();
+            return response()->json([
+            "message" => "Review dengan status show ditemukan",
+            "Products" => $review
+        ],200);
+    }
 }

@@ -98,7 +98,8 @@ Route::get('/reviews/',[ReviewController::class,'getAllReview'])->middleware(['a
 Route::get('/reviews/{id}',[ReviewController::class,'getSpecificReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
 // Change state review (hidden or show) (Admin)
 Route::patch('/reviews/{id}',[ReviewController::class,'changeStateReview'])->middleware(['auth:sanctum', CheckIsAdmin::class]);
-
+// ROUTENYA BEDA BUAT DI HOMEPAGE:
+Route::get('/reviewshome',[ReviewController::class,'homeReview']);
 
 // Dashboard
 // Get Data Sepanjang Masa
