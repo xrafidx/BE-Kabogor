@@ -27,12 +27,14 @@ class UserController extends Controller
     public function login (Request $request){
         $account = User::where('email', $request->email)->first();
         if(!$account){
-            return response()->json('Kesalahan di email atau password');
+            return response()->json([
+                "message" => 'Kesalahan di email atau password'],401);
         } 
         $hashedPassword = $account -> password;
         $passwordCheck = Hash::check($request['password'], $hashedPassword);
         if(!$passwordCheck){
-            return response()->json('Kesalahan di email atau password');
+            return response()->json([
+                "message" => 'Kesalahan di email atau password'],401);
         }
         
         $token = $account -> createToken('auth')->plainTextToken;
