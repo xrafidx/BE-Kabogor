@@ -39,9 +39,12 @@ class UserController extends Controller
         
         $token = $account -> createToken('auth')->plainTextToken;
 
+        $is_admin = $account['is_admin'];
+
         return response()->json([
             "message" => "Login Berhasil",
-            "token" => $token
+            "token" => $token,
+            "is_admin" => $is_admin
         ]);
 
     }
