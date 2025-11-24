@@ -19,7 +19,7 @@ class OrderController extends Controller
         // Cek dia admin apa bukan
          if ($request->user() && $request->user()->is_admin){
             // Jika admin show semua order yang ada di DB
-            $Orders = Order::All();
+            $Orders = Order::with('user')->get();
             // response
             return response()->json([
                 "message" => "Data Order Untuk Admin Ditemukan",
