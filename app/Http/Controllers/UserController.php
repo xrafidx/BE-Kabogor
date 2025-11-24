@@ -14,7 +14,7 @@ class UserController extends Controller
     public function register(Request $request){
         $isExist = User::where('email', $request->email)->first();
         if($isExist){
-            return response()->json('Account Already Exist');
+            return response()->json('Account Already Exist',400);
         }
         $request['password'] = Hash::make($request['password']);
         

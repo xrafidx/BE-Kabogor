@@ -62,30 +62,27 @@ class OrderController extends Controller
 
     }
     public function createOrder(StoreOrderRequest $request){
-        // 1. Validasi otomatis oleh StoreOrderRequest
         $validatedData = $request->validated();
         $user = $request->user();
         
-        // Array 'products' dari request, contoh:
-        // [ {"product_id": 1, "quantity": 2}, {"product_id": 3, "quantity": 1} ]
+
         $productItems = $validatedData['products'];
 
-        // Mulai Database Transaction
-        // Ini memastikan jika ada 1 error, semua proses DB akan dibatalkan
+
         try {
             $order = DB::transaction(function () use ($user, $productItems) {
                 
-                // 7. Ambil semua ID produk dari request
+                // Ambil semua ID produk dari request
                 $productIds = collect($productItems)->pluck('product_id');
                 
-                // 8. Ambil data produk ASLI dari DB (hanya 1 query)
-                //    Kita keyBy('id') agar mudah diakses
+                // Ambil data produk ASLI dari DB (hanya 1 query)
+                //keyBy('id') 
                 $productsFromDB = Product::findMany($productIds)->keyBy('id');
 
                 $totalPrice = 0;
                 $pivotData = []; // Data untuk tabel order_product
 
-                // 9. Hitung total harga & siapkan data pivot (di backend)
+                // Hitung total harga & siapkan data pivot (di backend)
                 foreach ($productItems as $item) {
                     $product = $productsFromDB->get($item['product_id']);
                     $quantity = $item['quantity'];
@@ -100,13 +97,13 @@ class OrderController extends Controller
                     ];
                 }
 
-                // 10. Buat Order baru di tabel 'orders'
+                // Buat Order baru di tabel 'orders'
                 $order = $user->orders()->create([
                     'total_price' => $totalPrice,
-                    'status' => OrderStatus::PENDING, // Status default dari Enum
+                    'status' => OrderStatus::PENDING, 
                 ]);
 
-                // 11. Lampirkan (attach) produk ke order di tabel pivot 'order_product'
+                //  produk ke order di tabel pivot 'order_product'
                 $order->products()->attach($pivotData);
 
                 return $order;
@@ -118,13 +115,12 @@ class OrderController extends Controller
             return response()->json([
                 "message" => "Order berhasil dibuat",
                 "order" => $order
-            ], 201); // 201 Created
+            ], 201); 
 
         } catch (Throwable $e) {
-            // Jika ada error di dalam transaction, batalkan
             return response()->json([
                 "message" => "Pembuatan order gagal, silakan coba lagi.",
-                "error" => $e->getMessage() // (Hapus ini di production)
+                "error" => $e->getMessage() 
             ], 500);
         }
 
@@ -140,20 +136,18 @@ class OrderController extends Controller
 
     }
     public function editState(UpdateOrderStatusRequest $request, string $id){
-        // 1. Validasi otomatis (cek 'status' ada & valid)
         $validated = $request->validated();
         $newStatus = OrderStatus::from($validated['status']); // Konversi string ke Objek Enum
         
         $user = $request->user();
         
-        // 2. Cari order, tapi jangan 'findOrFail' dulu
         $order = Order::find($id);
 
         if (!$order) {
             return response()->json(["message" => "Order tidak ditemukan."], 404);
         }
 
-        // 3. LOGIKA ADMIN: Boleh melakukan apa saja
+        // ADMIN: sabeb mau ngapain aje
         if ($user->is_admin) {
             $order->update(['status' => $newStatus]);
             
@@ -163,28 +157,28 @@ class OrderController extends Controller
             ], 200);
         }
 
-        // 4. LOGIKA USER BIASA:
+        // USER BIASA:
         
         // Cek kepemilikan
         if ($order->user_id !== $user->id) {
-            return response()->json(["message" => "Order ini bukan milik Anda."], 404); // Kirim 404 agar tidak bocor info
+            return response()->json(["message" => "Order ini bukan milik Anda."], 404); 
         }
 
         // User hanya boleh CANCEL
         if ($newStatus !== OrderStatus::CANCELLED) {
             return response()->json([
                 "message" => "User hanya diizinkan mengubah status menjadi 'cancelled'."
-            ], 403); // 403 Forbidden
+            ], 403); 
         }
 
         // User hanya boleh CANCEL jika status masih PENDING
         if ($order->status !== OrderStatus::PENDING) {
             return response()->json([
                 "message" => "Order tidak dapat dibatalkan karena sudah diproses."
-            ], 403); // 403 Forbidden
+            ], 403); 
         }
 
-        // 5. Jika semua lolos (milik user, mau cancel, status pending)
+        // (milik user, mau cancel, status pending)
         $order->update(['status' => OrderStatus::CANCELLED]);
 
         return response()->json([
@@ -194,19 +188,16 @@ class OrderController extends Controller
     }
 
     public function editOrder(StoreOrderRequest $request, string $id){
-        // 1. Validasi otomatis (sama seperti createOrder)
         $validatedData = $request->validated();
         $productItems = $validatedData['products']; // Keranjang baru
 
-        // 2. Cari order yang mau di-edit
+        // Cari order yang mau di-edit
         $order = Order::findOrFail($id);
 
-        // Mulai Transaction (karena kita menyentuh 2 tabel)
         try {
             $order = DB::transaction(function () use ($order, $productItems) {
                 
-                // 3. LOGIC LANGKAH 3-5 ANDA (Sama persis dgn createOrder)
-                // Kita hitung ulang total harga berdasarkan keranjang baru
+                // hitung ulang total harga berdasarkan keranjang baru
                 $productIds = collect($productItems)->pluck('product_id');
                 $productsFromDB = Product::findMany($productIds)->keyBy('id');
 
@@ -220,23 +211,22 @@ class OrderController extends Controller
 
                     $totalPrice += $priceAtTime * $quantity;
 
-                    // Siapkan data pivot baru
+                    // data pivot baru
                     $pivotData[$product->id] = [
                         'quantity' => $quantity,
                         'price_at_time' => $priceAtTime
                     ];
                 }
 
-                // 4. LANGKAH 6 (UPDATE): Perbarui tabel 'orders'
-                // Kita update total_price di order utamanya
+                // Perbarui tabel 'orders'
+                // update total_price di order utamanya
                 $order->update([
                     'total_price' => $totalPrice
                 ]);
 
-                // 5. LANGKAH 6 (SYNC): Perbarui tabel 'order_product'
-                // Ini adalah jawaban pertanyaan Anda.
-                // sync() akan menambah, mengupdate, dan menghapus
-                // data di tabel pivot secara otomatis.
+                // Perbarui tabel 'order_product'
+                // sync() menambah, mengupdate, dan menghapus
+                // data di tabel pivot 
                 $order->products()->sync($pivotData);
 
                 return $order;
@@ -254,7 +244,7 @@ class OrderController extends Controller
             // Jika ada error di dalam transaction
             return response()->json([
                 "message" => "Update order gagal, silakan coba lagi.",
-                "error" => $e->getMessage() // (Hapus ini di production)
+                "error" => $e->getMessage() 
             ], 500);
         }
     }   
