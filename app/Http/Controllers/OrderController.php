@@ -75,7 +75,7 @@ class OrderController extends Controller
                 // Ambil semua ID produk dari request
                 $productIds = collect($productItems)->pluck('product_id');
                 
-                // Ambil data produk ASLI dari DB (hanya 1 query)
+                // Ambil data produk ASLI dari DB 
                 //keyBy('id') 
                 $productsFromDB = Product::findMany($productIds)->keyBy('id');
 
